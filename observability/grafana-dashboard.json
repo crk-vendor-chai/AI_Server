@@ -1,0 +1,428 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "pnt-loki"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 8,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "pnt-loki"
+          },
+          "editorMode": "code",
+          "expr": "sum(count_over_time({service=\"crk-0-pnt-api\"} != `\"path\":\"/health\"` != `GET /health HTTP/` |~ `\"event\":\"http_transaction\".*\"status_code\":2[0-9]{2}` [$__range])) or vector(0)",
+          "queryType": "instant",
+          "refId": "A"
+        }
+      ],
+      "title": "2xx Responses (Selected Range)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "pnt-loki"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "orange",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 8,
+        "x": 8,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "pnt-loki"
+          },
+          "editorMode": "code",
+          "expr": "sum(count_over_time({service=\"crk-0-pnt-api\"} != `\"path\":\"/health\"` != `GET /health HTTP/` |~ `\"event\":\"http_transaction\".*\"status_code\":4[0-9]{2}` [$__range])) or vector(0)",
+          "queryType": "instant",
+          "refId": "A"
+        }
+      ],
+      "title": "4xx Responses (Selected Range)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "pnt-loki"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 8,
+        "x": 16,
+        "y": 0
+      },
+      "id": 3,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "pnt-loki"
+          },
+          "editorMode": "code",
+          "expr": "sum(count_over_time({service=\"crk-0-pnt-api\"} != `\"path\":\"/health\"` != `GET /health HTTP/` |~ `\"event\":\"http_transaction\".*\"status_code\":5[0-9]{2}` [$__range])) or vector(0)",
+          "queryType": "instant",
+          "refId": "A"
+        }
+      ],
+      "title": "5xx Responses (Selected Range)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "pnt-loki"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 5
+      },
+      "id": 4,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "pnt-loki"
+          },
+          "editorMode": "code",
+          "expr": "sum(count_over_time({service=\"crk-0-pnt-api\"} != `\"path\":\"/health\"` != `GET /health HTTP/` |~ `\"event\":\"http_transaction\".*\"status_code\":2[0-9]{2}` [$__interval])) or vector(0)",
+          "legendFormat": "2xx",
+          "queryType": "range",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "pnt-loki"
+          },
+          "editorMode": "code",
+          "expr": "sum(count_over_time({service=\"crk-0-pnt-api\"} != `\"path\":\"/health\"` != `GET /health HTTP/` |~ `\"event\":\"http_transaction\".*\"status_code\":4[0-9]{2}` [$__interval])) or vector(0)",
+          "legendFormat": "4xx",
+          "queryType": "range",
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "pnt-loki"
+          },
+          "editorMode": "code",
+          "expr": "sum(count_over_time({service=\"crk-0-pnt-api\"} != `\"path\":\"/health\"` != `GET /health HTTP/` |~ `\"event\":\"http_transaction\".*\"status_code\":5[0-9]{2}` [$__interval])) or vector(0)",
+          "legendFormat": "5xx",
+          "queryType": "range",
+          "refId": "C"
+        }
+      ],
+      "title": "HTTP Responses by Status Class",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "pnt-loki"
+      },
+      "gridPos": {
+        "h": 14,
+        "w": 24,
+        "x": 0,
+        "y": 13
+      },
+      "id": 5,
+      "options": {
+        "dedupStrategy": "none",
+        "enableInfiniteScrolling": false,
+        "enableLogDetails": true,
+        "prettifyLogMessage": false,
+        "showCommonLabels": false,
+        "showLabels": false,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "syntaxHighlighting": true,
+        "wrapLogMessage": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "pnt-loki"
+          },
+          "editorMode": "code",
+          "expr": "{service=\"crk-0-pnt-api\"} != `\"path\":\"/health\"` != `GET /health HTTP/` |~ `\"event\":\"http_transaction\".*\"status_code\":${status_class:raw}`",
+          "queryType": "range",
+          "refId": "A"
+        }
+      ],
+      "title": "HTTP Request/Response Payload Logs",
+      "type": "logs"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "pnt-loki"
+      },
+      "gridPos": {
+        "h": 14,
+        "w": 24,
+        "x": 0,
+        "y": 27
+      },
+      "id": 6,
+      "options": {
+        "dedupStrategy": "none",
+        "enableInfiniteScrolling": false,
+        "enableLogDetails": true,
+        "prettifyLogMessage": false,
+        "showCommonLabels": false,
+        "showLabels": false,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "syntaxHighlighting": true,
+        "wrapLogMessage": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "pnt-loki"
+          },
+          "editorMode": "code",
+          "expr": "{service=\"crk-0-pnt-api\"} != `\"path\":\"/health\"` != `GET /health HTTP/`",
+          "queryType": "range",
+          "refId": "A"
+        }
+      ],
+      "title": "All PNT API Logs",
+      "type": "logs"
+    }
+  ],
+  "refresh": "",
+  "schemaVersion": 41,
+  "tags": [
+    "crk",
+    "pnt",
+    "api",
+    "loki"
+  ],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "[1-5][0-9]{2}"
+        },
+        "description": "Filter structured HTTP transaction logs by response status",
+        "hide": 0,
+        "includeAll": false,
+        "label": "HTTP Status",
+        "multi": false,
+        "name": "status_class",
+        "options": [
+          {
+            "selected": true,
+            "text": "All",
+            "value": "[1-5][0-9]{2}"
+          },
+          {
+            "selected": false,
+            "text": "2xx",
+            "value": "2[0-9]{2}"
+          },
+          {
+            "selected": false,
+            "text": "4xx",
+            "value": "4[0-9]{2}"
+          },
+          {
+            "selected": false,
+            "text": "5xx",
+            "value": "5[0-9]{2}"
+          },
+          {
+            "selected": false,
+            "text": "400",
+            "value": "400"
+          },
+          {
+            "selected": false,
+            "text": "404",
+            "value": "404"
+          },
+          {
+            "selected": false,
+            "text": "409",
+            "value": "409"
+          },
+          {
+            "selected": false,
+            "text": "500",
+            "value": "500"
+          },
+          {
+            "selected": false,
+            "text": "503",
+            "value": "503"
+          }
+        ],
+        "query": "All : [1-5][0-9]{2},2xx : 2[0-9]{2},4xx : 4[0-9]{2},5xx : 5[0-9]{2},400 : 400,404 : 404,409 : 409,500 : 500,503 : 503",
+        "skipUrlSync": false,
+        "type": "custom"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "CRK PNT API Structured Logs",
+  "uid": "crk-pnt-api-structured-logs",
+  "version": 3
+}

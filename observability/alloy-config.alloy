@@ -1,0 +1,31 @@
+logging {
+  level  = "info"
+  format = "logfmt"
+}
+
+discovery.docker "pnt_api" {
+  host = "unix:///var/run/docker.sock"
+
+  filter {
+    name   = "label"
+    values = ["com.docker.compose.service=pnt-api"]
+  }
+}
+
+loki.source.docker "pnt_api" {
+  host       = "unix:///var/run/docker.sock"
+  targets    = discovery.docker.pnt_api.targets
+  labels     = {
+    environment = "production",
+    job         = "pnt-api",
+    service     = "crk-0-pnt-api",
+  }
+  forward_to       = [loki.write.local.receiver]
+  refresh_interval = "5s"
+}
+
+loki.write "local" {
+  endpoint {
+    url = "http://loki:3100/loki/api/v1/push"
+  }
+}

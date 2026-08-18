@@ -1,0 +1,84 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual environments
+.venv/
+.venv*/
+venv/
+env/
+
+# Local secrets / environment
+.env
+.env.*
+!.env.example
+
+# Logs and runtime state
+logs/
+logbf/
+*.log
+*.pid
+
+# Downloaded source images and generated datasets
+img_download/
+auto-labeling/sam2/results*/
+auto-labeling/sam2/results_test*/
+auto-labeling/sam3/runs/
+auto-labeling/sam3_with_dino/runs/
+
+# Training / model artifacts
+runs/
+weights/
+checkpoints/
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+
+# Generated archives and media
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.mp4
+*.avi
+*.mov
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+/secrets/
+
+# ============================================================
+# aipnt 추가 (2026-08-05) — 파이프라인 산출물·백업 파일
+# 위 규칙에서 빠져 있던 대용량 생성물. 코드가 아니므로 제외한다.
+# ============================================================
+
+# 파이프라인 작업 산출물
+segment_work/
+divisionSynthesis/
+
+# 분석·실험 산출물 (하위 .py 는 필요 시 개별 추가)
+analysis/
+auto-labeling/sam3_with_dino/analysis/
+0_pnt/
+
+# 검수 보정 라벨 아카이브
+corrected-labeling/
+
+# 노트북 체크포인트
+.ipynb_checkpoints/
+
+# 백업·임시 사본
+*.bak
+*.bak_*
+*.orig
+*~

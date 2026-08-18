@@ -1,0 +1,220 @@
+services:
+  pnt-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: crk-0-pnt-api:latest
+    container_name: crk-0-pnt-api
+    env_file:
+      - .env
+    environment:
+      PNT_API_HOST: 0.0.0.0
+      PNT_API_PORT: "2140"
+      VENV_PYTHON: python
+      PNT_LOG_DIR: /app/logs
+      PNT_LOG_TO_FILE: "false"
+      HTTP_LOG_BODY_MAX_BYTES: "${HTTP_LOG_BODY_MAX_BYTES:-65536}"
+      HTTP_LOG_HEALTH: "${HTTP_LOG_HEALTH:-false}"
+      HTTP_LOG_EXCLUDED_PATHS: "${HTTP_LOG_EXCLUDED_PATHS:-/health,/docs,/openapi.json,/redoc}"
+      PIPELINE_ANNOTATION_GPUS: "0,1"
+      ANNOTATION_GPU_MIN_FREE_MEMORY_MIB: "${ANNOTATION_GPU_MIN_FREE_MEMORY_MIB:-24576}"
+      ANNOTATION_GPU_SLOT_MEMORY_FRACTION: "${ANNOTATION_GPU_SLOT_MEMORY_FRACTION:-0.50}"
+      ANNOTATION_GPU_MAX_SLOTS_PER_DEVICE: "${ANNOTATION_GPU_MAX_SLOTS_PER_DEVICE:-2}"
+      ANNOTATION_GPU_MAX_UTILIZATION: "${ANNOTATION_GPU_MAX_UTILIZATION:-80}"
+      ANNOTATION_GPU_POLL_INTERVAL_SEC: "${ANNOTATION_GPU_POLL_INTERVAL_SEC:-5}"
+      ANNOTATION_GPU_STATUS_LOG_INTERVAL_SEC: "${ANNOTATION_GPU_STATUS_LOG_INTERVAL_SEC:-60}"
+      ANNOTATION_GPU_SLOT_WAIT_SEC: "${ANNOTATION_GPU_SLOT_WAIT_SEC:-14400}"
+      ANNOTATION_BASE_DIR: /app/img_download
+      ANNOTATION_MINIO_UPLOAD_WORKERS: "${ANNOTATION_MINIO_UPLOAD_WORKERS:-4}"
+      SEGMENT_BASE_DIR: /app/segment_work
+      SAM3_DINO_RUNNER: /app/auto-labeling/sam3_with_dino/asis_pipeline.py
+      SAM3_DINO_RUNS_DIR: /app/runs/sam3_with_dino
+      SAM3_DINO_ASIS_FILL_THRESHOLD: "${SAM3_DINO_ASIS_FILL_THRESHOLD:-0.45}"
+      SAM3_DINO_ASIS_EDGE_AREA_RATIO: "${SAM3_DINO_ASIS_EDGE_AREA_RATIO:-0.30}"
+      SAM3_DINO_ASIS_SHORT_RUN: "${SAM3_DINO_ASIS_SHORT_RUN:-3}"
+      SAM3_DINO_ASIS_DINO_BATCH: "${SAM3_DINO_ASIS_DINO_BATCH:-4}"
+      SAM3_DINO_BACKEND: "${SAM3_DINO_BACKEND:-video}"
+      SAM3_DINO_MODEL: "${SAM3_DINO_MODEL:-IDEA-Research/grounding-dino-base}"
+      SAM3_DINO_HAND_PROMPTS: "${SAM3_DINO_HAND_PROMPTS:-human hand|left hand|right hand|palm|fingers}"
+      SAM3_DINO_SAM3_HAND_PROMPT: "${SAM3_DINO_SAM3_HAND_PROMPT:-human hand and fingers}"
+      SAM3_DINO_HAND_BOX_THRESHOLD: "${SAM3_DINO_HAND_BOX_THRESHOLD:-0.25}"
+      SAM3_DINO_OBJECT_BOX_THRESHOLD: "${SAM3_DINO_OBJECT_BOX_THRESHOLD:-0.22}"
+      SAM3_DINO_TEXT_THRESHOLD: "${SAM3_DINO_TEXT_THRESHOLD:-0.20}"
+      SAM3_DINO_CONFIDENCE: "${SAM3_DINO_CONFIDENCE:-0.35}"
+      SAM3_DINO_AREA_WEIGHT: "${SAM3_DINO_AREA_WEIGHT:-0.15}"
+      SAM3_DINO_MIN_PROMPT_IOU: "${SAM3_DINO_MIN_PROMPT_IOU:-0.15}"
+      SAM3_DINO_MIN_AREA_RATIO: "${SAM3_DINO_MIN_AREA_RATIO:-0.15}"
+      SAM3_DINO_MAX_AREA_RATIO: "${SAM3_DINO_MAX_AREA_RATIO:-4.0}"
+      SAM3_DINO_TEMPORAL_OBJECT_IOU_WEIGHT: "${SAM3_DINO_TEMPORAL_OBJECT_IOU_WEIGHT:-0.20}"
+      SAM3_DINO_TEMPORAL_DECAY: "${SAM3_DINO_TEMPORAL_DECAY:-0.75}"
+      SAM3_DINO_TEMPORAL_MAX_GAP: "${SAM3_DINO_TEMPORAL_MAX_GAP:-5}"
+      SAM3_DINO_MIN_TEMPORAL_COMPATIBILITY: "${SAM3_DINO_MIN_TEMPORAL_COMPATIBILITY:-0.30}"
+      SAM3_DINO_MIN_HAND_OBJECT_RELATION: "${SAM3_DINO_MIN_HAND_OBJECT_RELATION:-0.08}"
+      SAM3_DINO_OBJECT_SOLO_THRESHOLD: "${SAM3_DINO_OBJECT_SOLO_THRESHOLD:-0.38}"
+      SAM3_DINO_HAND_SOLO_THRESHOLD: "${SAM3_DINO_HAND_SOLO_THRESHOLD:-0.40}"
+      SAM3_DINO_VIDEO_PRODUCT_SEED_THRESHOLD: "${SAM3_DINO_VIDEO_PRODUCT_SEED_THRESHOLD:-0.24}"
+      SAM3_DINO_VIDEO_HAND_SEED_THRESHOLD: "${SAM3_DINO_VIDEO_HAND_SEED_THRESHOLD:-0.30}"
+      SAM3_DINO_VIDEO_MIN_OUTPUT_SCORE: "${SAM3_DINO_VIDEO_MIN_OUTPUT_SCORE:-0.40}"
+      SAM3_DINO_VIDEO_SEED_SUPPORT_RADIUS: "${SAM3_DINO_VIDEO_SEED_SUPPORT_RADIUS:-3}"
+      SAM3_DINO_CROSS_CLASS_DUPLICATE_IOU: "${SAM3_DINO_CROSS_CLASS_DUPLICATE_IOU:-0.88}"
+      SAM3_DINO_CROSS_CLASS_DUPLICATE_AREA_SIMILARITY: "${SAM3_DINO_CROSS_CLASS_DUPLICATE_AREA_SIMILARITY:-0.85}"
+      SAM3_DINO_CROSS_CLASS_DUPLICATE_MASK_IOU: "${SAM3_DINO_CROSS_CLASS_DUPLICATE_MASK_IOU:-0.80}"
+      SAM3_DINO_CROSS_CLASS_HAND_MARGIN: "${SAM3_DINO_CROSS_CLASS_HAND_MARGIN:-0.10}"
+      SAM3_DINO_BACKGROUND_REFERENCE_ROOT: "${SAM3_DINO_BACKGROUND_REFERENCE_ROOT:-/app/img_download/_backgrounds/{division_idx}}"
+      SAM3_DINO_BACKGROUND_PIXEL_THRESHOLD: "${SAM3_DINO_BACKGROUND_PIXEL_THRESHOLD:-22}"
+      SAM3_DINO_BACKGROUND_MIN_HAND_FOREGROUND: "${SAM3_DINO_BACKGROUND_MIN_HAND_FOREGROUND:-0.06}"
+      SAM3_DINO_BACKGROUND_MIN_OBJECT_FOREGROUND: "${SAM3_DINO_BACKGROUND_MIN_OBJECT_FOREGROUND:-0.08}"
+      SAM3_DINO_COMPACT_HAND_MAX_PRODUCT_GAP: "${SAM3_DINO_COMPACT_HAND_MAX_PRODUCT_GAP:-0.18}"
+      SAM3_DINO_COMPACT_HAND_CLUSTER_RADIUS: "${SAM3_DINO_COMPACT_HAND_CLUSTER_RADIUS:-0.22}"
+      SAM3_DINO_COMPACT_HAND_SCORE_WINDOW: "${SAM3_DINO_COMPACT_HAND_SCORE_WINDOW:-0.14}"
+      SAM3_DINO_COMPACT_HAND_MIN_MARGIN: "${SAM3_DINO_COMPACT_HAND_MIN_MARGIN:-0.08}"
+      SAM3_DINO_COMPACT_HAND_EXPANSION: "${SAM3_DINO_COMPACT_HAND_EXPANSION:-0.30}"
+      SAM3_DINO_HAND_MASK_SUPPORT_EXPANSION: "${SAM3_DINO_HAND_MASK_SUPPORT_EXPANSION:-0.15}"
+      SAM3_DINO_HAND_PARTIAL_MASK_SUPPORT_EXPANSION: "${SAM3_DINO_HAND_PARTIAL_MASK_SUPPORT_EXPANSION:-0.45}"
+      SAM3_DINO_HAND_MAX_MASK_SUPPORT_EXPANSION: "${SAM3_DINO_HAND_MAX_MASK_SUPPORT_EXPANSION:-0.60}"
+      SAM3_DINO_HAND_COMPONENT_MIN_AREA_RATIO: "${SAM3_DINO_HAND_COMPONENT_MIN_AREA_RATIO:-0.04}"
+      SAM3_DINO_HAND_COMPONENT_MAX_GAP: "${SAM3_DINO_HAND_COMPONENT_MAX_GAP:-0.08}"
+      SAM3_DINO_HAND_COMPONENT_PRODUCT_GAP: "${SAM3_DINO_HAND_COMPONENT_PRODUCT_GAP:-0.05}"
+      SAM3_DINO_HAND_COLLAPSE_AREA_RATIO: "${SAM3_DINO_HAND_COLLAPSE_AREA_RATIO:-0.45}"
+      SAM3_DINO_HAND_COLLAPSE_DIMENSION_RATIO: "${SAM3_DINO_HAND_COLLAPSE_DIMENSION_RATIO:-0.50}"
+      SAM3_DINO_HAND_COLLAPSE_HISTORY_MIN: "${SAM3_DINO_HAND_COLLAPSE_HISTORY_MIN:-4}"
+      SAM3_DINO_HAND_COLLAPSE_HISTORY_WINDOW: "${SAM3_DINO_HAND_COLLAPSE_HISTORY_WINDOW:-9}"
+      SAM3_DINO_HAND_RECOVERY_MIN_AREA_RATIO: "${SAM3_DINO_HAND_RECOVERY_MIN_AREA_RATIO:-0.65}"
+      SAM3_DINO_HAND_RECOVERY_SEARCH_RADIUS: "${SAM3_DINO_HAND_RECOVERY_SEARCH_RADIUS:-60}"
+      SAM3_DINO_HAND_RECOVERY_CONTEXT_FRAMES: "${SAM3_DINO_HAND_RECOVERY_CONTEXT_FRAMES:-45}"
+      SAM3_DINO_HAND_RECOVERY_MAX_ANCHORS: "${SAM3_DINO_HAND_RECOVERY_MAX_ANCHORS:-0}"
+      SAM3_DINO_HAND_RECOVERY_MERGE_GAP: "${SAM3_DINO_HAND_RECOVERY_MERGE_GAP:-5}"
+      SYNTH_AUGMENT_RATIO: "${SYNTH_AUGMENT_RATIO:-0.5}"
+      SYNTH_STEP_BY_STEP: "${SYNTH_STEP_BY_STEP:-true}"
+      SYNTH_INCLUDE_FAILED: "${SYNTH_INCLUDE_FAILED:-true}"
+      SYNTH_BLUR_PROFILE: "${SYNTH_BLUR_PROFILE:-strong}"
+      SYNTH_BLUR_PROB: "${SYNTH_BLUR_PROB:-0.5}"
+      YOLO_RUNS_DIR: /app/runs/detect/train
+      YOLO_VAL_RUNS_DIR: /app/runs/detect/val
+      YOLO_MODEL_PATH: /cache/ultralytics/yolo26n.pt
+      HF_HOME: /cache/huggingface
+      TORCH_HOME: /cache/torch
+      YOLO_CONFIG_DIR: /cache/ultralytics
+    ports:
+      - "2140:2140"
+    volumes:
+      - ./logs:/app/logs
+      - ./img_download:/app/img_download
+      - ./runs:/app/runs
+      - ./segment_work:/app/segment_work
+      - ./auto-segment/sam/sam_vit_h_4b8939.pth:/app/auto-segment/sam/sam_vit_h_4b8939.pth:ro
+      - model-cache:/cache
+    shm_size: "16gb"
+    gpus: all
+    init: true
+    restart: unless-stopped
+    stop_grace_period: 30s
+    logging:
+      driver: json-file
+      options:
+        max-size: "20m"
+        max-file: "5"
+        labels: "service,component"
+    labels:
+      service: "crk-0-pnt-api"
+      component: "api"
+
+  loki:
+    image: grafana/loki:3.7.0
+    container_name: pnt-loki
+    command: -config.file=/etc/loki/local-config.yaml
+    ports:
+      - "127.0.0.1:3100:3100"
+    volumes:
+      - ./observability/loki-config.yaml:/etc/loki/local-config.yaml:ro
+      - loki-data:/loki
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  alloy:
+    image: grafana/alloy:v1.16.1
+    container_name: pnt-alloy
+    user: "0:0"
+    command:
+      - run
+      - --server.http.listen-addr=0.0.0.0:12345
+      - --storage.path=/var/lib/alloy/data
+      - --disable-reporting
+      - /etc/alloy/config.alloy
+    volumes:
+      - ./observability/alloy-config.alloy:/etc/alloy/config.alloy:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - alloy-data:/var/lib/alloy/data
+    depends_on:
+      - loki
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  prometheus:
+    image: prom/prometheus:v3.12.0
+    container_name: pnt-prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=30d
+      - --storage.tsdb.retention.size=10GB
+      - --web.enable-lifecycle
+    ports:
+      - "127.0.0.1:9097:9090"
+    volumes:
+      - ./observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    depends_on:
+      - node-exporter
+      - dcgm-exporter
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  node-exporter:
+    image: prom/node-exporter:v1.11.1
+    container_name: pnt-node-exporter
+    command:
+      - --path.rootfs=/host
+      - --collector.filesystem.mount-points-exclude=^/(dev|proc|sys|run/credentials/.+|var/lib/docker/.+)($$|/)
+    pid: host
+    uts: host
+    volumes:
+      - /:/host:ro,rslave
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  dcgm-exporter:
+    image: nvcr.io/nvidia/k8s/dcgm-exporter:4.6.0-4.8.3-distroless
+    container_name: pnt-dcgm-exporter
+    cap_add:
+      - SYS_ADMIN
+    gpus: all
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  model-cache:
+  loki-data:
+  alloy-data:
+  prometheus-data:
+
