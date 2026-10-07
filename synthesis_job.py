@@ -6,6 +6,11 @@
   2. MinIO `productImg/`, `productAnnotation/` (검수 완료 라벨) 다운로드
   3. 규칙 기반 합성 (`apply_segment_shake_blur` 등)
   4. MinIO `divisionSynthesis/{division}_{train}_{eng}/` 업로드
+
+Blur 정책:
+  - 배치에 성공한 synthetic segment 중 정확히 절반에만 blur 적용
+  - blur 강도는 `synthesis_job_step_by_step_half_blur.py`와 동일
+  - 그 외 MinIO/카메라/라벨/class-id/raw-fallback 로직은 Docker 버전을 유지
 """
 import os
 import re
@@ -26,8 +31,6 @@ except ImportError:
     from class_schema import encode_synthetic_class_id
 
 SYNTH_BLUR_PROB = float(os.getenv("SYNTH_BLUR_PROB", "0.5"))
-SYNTH_BLUR_PROFILE = os.getenv("SYNTH_BLUR_PROFILE", "strong").strip().lower()
-_VALID_BLUR_PROFILES = {"light", "strong"}
 
 # pkl 안의 카메라 데이터 키 (cam_0, cam_1, cam_2 …).
 # cam_0 = top, 그 외 = side 로 해석한다.
@@ -68,81 +71,61 @@ def _apply_pull_motion_streak(seg: np.ndarray, length: int, angle_deg: float, we
 
 
 def _apply_light_gaussian_blur(seg: np.ndarray) -> np.ndarray:
-    k = 3
-    sigma = random.uniform(0.3, 0.7)
+    """step_by_step_half_blur와 동일한 Gaussian blur 강도."""
+    k = random.choice([3, 5])
+    sigma = random.uniform(0.6, 1.4)
     return cv2.GaussianBlur(seg, (k, k), sigmaX=sigma, sigmaY=sigma)
 
 
 def apply_segment_shake_blur(
     seg: np.ndarray,
     prob: float = SYNTH_BLUR_PROB,
-    profile: Optional[str] = None,
 ) -> np.ndarray:
-    """합성 segment에 Gaussian + motion blur를 적용한다.
+    """step_by_step_half_blur와 동일한 강한 Gaussian + shake + motion blur.
 
-    ``light``는 기존 운영 강도이고 ``strong``은 step-by-step 레퍼런스의
-    긴 흔들림과 streak를 재현한다. mask와 bbox는 변경하지 않는다.
+    합성 루프에서는 blur 대상으로 선정된 segment에 ``prob=1.0``으로 호출한다.
+    mask와 bbox는 변경하지 않는다.
     """
-    selected = (profile or SYNTH_BLUR_PROFILE).strip().lower()
-    if selected not in _VALID_BLUR_PROFILES:
-        raise ValueError(
-            f"invalid SYNTH_BLUR_PROFILE={selected!r}; "
-            f"expected one of {sorted(_VALID_BLUR_PROFILES)}"
-        )
     if random.random() > prob:
         return seg
 
-    if selected == "strong":
-        kernel = random.choice([3, 5])
-        sigma = random.uniform(0.6, 1.4)
-        out = cv2.GaussianBlur(seg, (kernel, kernel), sigmaX=sigma, sigmaY=sigma)
-        seg_diag = int(np.hypot(*out.shape[:2]))
-        max_shift = max(3, min(7, seg_diag // 35))
-        shaken = _shake_frame_average(
-            out,
-            n_samples=random.randint(4, 7),
-            max_shift=max_shift,
-        )
-        streak_len = max(9, min(21, seg_diag // 8))
-        if streak_len % 2 == 0:
-            streak_len += 1
-        angle = random.uniform(0, 360)
-        out = _apply_pull_motion_streak(
-            shaken,
-            streak_len,
-            angle,
-            weight=random.uniform(0.50, 0.75),
-        )
-        if random.random() < 0.50:
-            out = _apply_pull_motion_streak(
-                out,
-                random.choice([5, 7, 9]),
-                angle + random.uniform(-10, 10),
-                weight=random.uniform(0.20, 0.40),
-            )
-        return out
-
     out = _apply_light_gaussian_blur(seg)
-    seg_diag = int(np.hypot(*out.shape[:2]))
-    max_shift = max(1, min(2, seg_diag // 80))
-    shaken = _shake_frame_average(out, n_samples=random.randint(2, 3), max_shift=max_shift)
-    streak_len = max(5, min(7, seg_diag // 16))
+
+    h, w = out.shape[:2]
+    seg_diag = int(np.hypot(h, w))
+
+    # 위치 흔들림: 최대 3~7px, 4~7개 프레임 평균
+    max_shift = max(3, min(7, seg_diag // 35))
+    shaken = _shake_frame_average(
+        out,
+        n_samples=random.randint(4, 7),
+        max_shift=max_shift,
+    )
+
+    # 물체 크기에 따라 9~21px motion streak
+    streak_len = max(9, min(21, seg_diag // 8))
     if streak_len % 2 == 0:
         streak_len += 1
+
     angle = random.uniform(0, 360)
     out = _apply_pull_motion_streak(
         shaken,
         streak_len,
         angle,
-        weight=random.uniform(0.30, 0.45),
+        weight=random.uniform(0.50, 0.75),
     )
-    if random.random() < 0.25:
+
+    # 50% 확률로 두 번째 motion streak 추가
+    if random.random() < 0.50:
+        angle2 = angle + random.uniform(-10, 10)
+        len2 = random.choice([5, 7, 9])
         out = _apply_pull_motion_streak(
             out,
-            3,
-            angle + random.uniform(-15, 15),
-            weight=random.uniform(0.12, 0.20),
+            len2,
+            angle2,
+            weight=random.uniform(0.20, 0.40),
         )
+
     return out
 
 
@@ -686,56 +669,74 @@ def synthesize_on_images(
         aug = img.copy()
         new_lines = []
         cur_boxes = existing_bboxes[:]
-        
+        pending_pastes = []  # 배치 성공 segment를 모은 뒤 정확히 절반에만 blur를 적용한다.
+
         for _ in range(needed):
             # 랜덤 class_id 선택
             available_classes = list(segment_bank[view].keys())
             if not available_classes:
                 break
             cls_id = random.choice(available_classes)
-            
+
             # 랜덤 segment 선택
             seg_data = random.choice(segment_bank[view][cls_id])
-            
+
             seg = seg_data["segment"]
             mask = seg_data["mask"].astype(np.uint8)
-            
+
             # rotation
             angle = random.randint(-180, 180)
             seg, mask = rotate_image_and_mask(seg, mask, angle)
-            
+
             # scale
             scale = random.uniform(*(scale_range_top if view == "top" else scale_range_side))
-            sh, sw = int(seg.shape[0]*scale), int(seg.shape[1]*scale)
+            sh, sw = int(seg.shape[0] * scale), int(seg.shape[1] * scale)
             if sh <= 0 or sw <= 0:
                 continue
-            
+
             if sh * sw > h * w * max_segment_area_ratio:
                 continue
-            
+
             seg = cv2.resize(seg, (sw, sh))
             mask = cv2.resize(mask, (sw, sh), interpolation=cv2.INTER_NEAREST)
-            seg = apply_segment_shake_blur(seg)
-            
+
             # find position
             pos = find_valid_position(aug.shape, (sh, sw), cur_boxes, view)
             if pos is None:
                 continue
 
-            aug_before = aug.copy()
-            success, bbox = paste_segment(aug, seg, mask, *pos)
-            if not success:
+            # blur 여부는 배치 성공 여부와 분리한다. 실제 픽셀 합성은 모든 배치가
+            # 확정된 뒤 수행하고, 성공 segment 수를 기준으로 정확히 절반만 blur한다.
+            lb = get_bbox_from_mask(mask)
+            if lb is None:
                 continue
+            x, y = pos
+            bbox = [x + lb[0], y + lb[1], x + lb[2], y + lb[3]]
 
             if any(boxes_overlap_exceeds(bbox, b) for b in cur_boxes):
-                aug = aug_before
                 continue
 
             cur_boxes.append(bbox)
             xc, yc, bw, bh = xyxy_to_yolo(*bbox, w, h)
             synthetic_id = encode_synthetic_class_id(cls_id)
             new_lines.append(f"{synthetic_id} {xc:.6f} {yc:.6f} {bw:.6f} {bh:.6f}")
-        
+            pending_pastes.append({"seg": seg, "mask": mask, "x": x, "y": y})
+
+        # step_by_step_half_blur와 동일하게 실제 배치 성공 segment 중 정확히 절반에만
+        # blur를 적용한다. 홀수개이면 non-blur 쪽에 1개가 더 들어간다.
+        n_pasted = len(pending_pastes)
+        blur_count = n_pasted // 2
+        blur_flags = [True] * blur_count + [False] * (n_pasted - blur_count)
+        random.shuffle(blur_flags)
+
+        for item, do_blur in zip(pending_pastes, blur_flags):
+            seg_to_paste = (
+                apply_segment_shake_blur(item["seg"], prob=1.0)
+                if do_blur
+                else item["seg"]
+            )
+            paste_segment(aug, seg_to_paste, item["mask"], item["x"], item["y"])
+
         if new_lines:
             # 합성 이미지 저장
             syn_img_name = f"syn{syn_counter:05d}.jpg"

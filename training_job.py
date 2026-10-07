@@ -129,7 +129,7 @@ def _parse_penalty_weights(s: str) -> dict[int, float]:
     return result
 
 _PROJECT_ROOT = Path(__file__).resolve().parent
-_DEFAULT_YOLO_MODEL_PATH = _PROJECT_ROOT / "yolo26n.pt"
+_DEFAULT_YOLO_MODEL_PATH = _PROJECT_ROOT / "yolov8n.pt"
 _DEFAULT_YOLO_RUNS_DIR = _PROJECT_ROOT / "runs" / "detect" / "train"
 
 
@@ -667,7 +667,7 @@ def _train_yolo(
         "YOLO_MODEL_PATH",
         str(_DEFAULT_YOLO_MODEL_PATH),
     ).strip()
-    epochs = int(os.getenv("YOLO_EPOCHS", "350"))
+    epochs = int(os.getenv("YOLO_EPOCHS", "450"))
     imgsz = int(os.getenv("YOLO_IMGSZ", "480"))
     batch = int(os.getenv("YOLO_BATCH", "128"))
     workers = int(os.getenv("YOLO_WORKERS", "8"))
@@ -688,8 +688,8 @@ def _train_yolo(
     device = os.getenv("YOLO_DEVICE", "0").strip()
     resume = os.getenv("YOLO_RESUME", "false").strip().lower() == "true"
     hsv_h = float(os.getenv("YOLO_HSV_H", "0.05"))
-    hsv_s = float(os.getenv("YOLO_HSV_S", "0.5"))
-    hsv_v = float(os.getenv("YOLO_HSV_V", "0.7"))
+    hsv_s = float(os.getenv("YOLO_HSV_S", "0.55"))
+    hsv_v = float(os.getenv("YOLO_HSV_V", "0.6"))
     mosaic = float(os.getenv("YOLO_MOSAIC", "0.6"))
     mixup = float(os.getenv("YOLO_MIXUP", "0.3"))
 
