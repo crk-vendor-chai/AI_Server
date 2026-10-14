@@ -1312,7 +1312,7 @@ def _run_segment_job(
     request_ctx: Optional[RequestLogContext] = None,
     run_id: str = "",
 ) -> None:
-    """세그먼트 합성 job 실행."""
+    """어노테이션과 공유하는 GPU 슬롯을 예약한 뒤 세그먼트를 실행."""
     _bind_request_ctx(request_ctx)
     if not run_id:
         run_id = _run_id_from_ctx(request_ctx)
@@ -1320,20 +1320,44 @@ def _run_segment_job(
     foldername = product_info.get("foldername", "")
     obj_id = product_info.get("product_object_id")
     if run_id and obj_id:
-        update_product_phase(_get_mongo_collection, run_id, obj_id, PHASE_SEGMENTING)
-    pipeline_log(
-        f"segment 시작: product_idx={product_info.get('product_idx')}, foldername={foldername}",
-        phase="segment",
-    )
+        update_product_phase(_get_mongo_collection, run_id, obj_id, PHASE_PENDING_SEGMENT)
+    gpu_pool = None
+    gpu_id = None
+    slot_label = f"segment:{foldername}"
+    ok = False
+    try:
+        gpu_pool = get_gpu_slot_pool(
+            _annotation_gpu_ids(), _annotation_gpu_slot_wait_sec(), logger=pipeline_log
+        )
+        gpu_id = gpu_pool.acquire(slot_label)
+        if run_id and obj_id:
+            update_product_phase(_get_mongo_collection, run_id, obj_id, PHASE_SEGMENTING)
+        pipeline_log(
+            f"segment 시작: product_idx={product_info.get('product_idx')}, "
+            f"foldername={foldername}, GPU {gpu_id}",
+            phase="segment",
+        )
+        ok = run_segment_job(division_idx, product_info, is_cold=is_cold, gpu_id=gpu_id)
+    except Exception as exc:
+        pipeline_log(
+            f"segment 실행 실패: {foldername} — {type(exc).__name__}: {exc}",
+            phase="segment",
+            level="ERROR",
+        )
+    finally:
+        if gpu_pool is not None and gpu_id is not None:
+            gpu_pool.release(gpu_id, slot_label)
 
-    ok = run_segment_job(division_idx, product_info, is_cold=is_cold)
     if ok:
         if obj_id:
-            _update_training_status_in_mongo(brunch_name, obj_id, status="4")
-            if run_id:
-                update_product_phase(_get_mongo_collection, run_id, obj_id, PHASE_READY)
-            pipeline_log(f"segment 완료, training_status → 4: {foldername}", phase="segment")
-    else:
+            ok = _update_training_status_in_mongo(brunch_name, obj_id, status="4")
+            if ok:
+                if run_id:
+                    update_product_phase(_get_mongo_collection, run_id, obj_id, PHASE_READY)
+                pipeline_log(f"segment 완료, training_status → 4: {foldername}", phase="segment")
+    if not ok:
+        if run_id and obj_id:
+            update_product_phase(_get_mongo_collection, run_id, obj_id, PHASE_FAILED)
         pipeline_log(f"segment 실패: {foldername}", phase="segment", level="ERROR")
 
     active = find_active_run(_get_mongo_collection, division_idx, is_cold)

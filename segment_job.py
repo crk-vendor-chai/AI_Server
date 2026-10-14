@@ -300,6 +300,8 @@ def run_segment_job(
     division_idx: str,
     product_info: dict,
     is_cold: bool = False,
+    *,
+    gpu_id: Optional[int] = None,
 ) -> bool:
     """
     MinIO에서 이미지·검수 라벨을 받아 세그먼트(PKL) 합성을 실행합니다.
@@ -408,6 +410,10 @@ def run_segment_job(
     env["PRODUCT_ENG_NAME"] = product_eng_name
     env["DIVISION_IDX"] = division_idx
     env["MINIO_BASE_PREFIX"] = "productSeg"
+    if gpu_id is not None:
+        # auto-segment.sh는 이 값을 CUDA_VISIBLE_DEVICES로 적용합니다.
+        env["PIPELINE_CUDA_VISIBLE_DEVICES"] = str(gpu_id)
+        env["CUDA_VISIBLE_DEVICES"] = str(gpu_id)
 
     timeout_sec = int(os.environ.get("SEGMENT_JOB_TIMEOUT", "0")) or None
 
@@ -418,7 +424,8 @@ def run_segment_job(
             f"[segment_job] 실행: CLASS_NAME={foldername}, "
             f"product_idx={product_idx}, train_product_idx={train_product_idx}, "
             f"product_eng_name={product_eng_name}, division_idx={division_idx}, "
-            f"is_cold={is_cold}, images_dir={local_images_dir}, labels_dir={local_labels_dir}, cwd={cwd}"
+            f"is_cold={is_cold}, gpu_id={gpu_id}, images_dir={local_images_dir}, "
+            f"labels_dir={local_labels_dir}, cwd={cwd}"
         )
         result = run_shell_job(
             ["/bin/bash", str(script_path)],
