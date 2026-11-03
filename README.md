@@ -143,7 +143,7 @@ docker info | grep -i runtime
 | `ANNOTATION_GPU_SLOT_MEMORY_FRACTION` | 작업 1개가 요구하는 GPU 여유 VRAM 비율, 기본값 `0.50` |
 | `ANNOTATION_GPU_MAX_SLOTS_PER_DEVICE` | GPU 하나에 예약할 수 있는 최대 작업 수, 기본값 `2` |
 | `ANNOTATION_LOCK_WAIT_SEC` | 직접 실행·복구 경로의 division batch lock 대기 시간. 일반 product/created 재요청은 직렬 큐를 사용 |
-| `ANNOTATION_GPU_SLOT_WAIT_SEC` | GPU 슬롯 대기 시간 |
+| `ANNOTATION_GPU_SLOT_WAIT_SEC` | GPU 슬롯 대기 시간, 기본값 `43200`초(12시간) |
 | `ANNOTATION_GPU_MIN_FREE_MEMORY_MIB` | GPU 할당에 필요한 최소 여유 VRAM(MiB), 기본값 `24576` |
 | `ANNOTATION_MINIO_UPLOAD_WORKERS` | 웹 검수 원본 이미지 MinIO 병렬 업로드 수, 기본값 `4` |
 | `ANNOTATION_GPU_MAX_UTILIZATION` | GPU 할당이 가능한 최대 사용률(%), 기본값 `80` |

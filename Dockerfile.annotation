@@ -1,0 +1,21 @@
+# Build this dependency image with the existing Dockerfile, or supply its registry tag.
+ARG ANNOTATION_BASE_IMAGE=crk-0-pnt-api:annotation-runtime-base-20261026
+FROM ${ANNOTATION_BASE_IMAGE}
+USER root
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends libportaudio2 \
+    && rm -rf /var/lib/apt/lists/*
+COPY auto-labeling/sam3_with_dino/requirements-annotation-cpu.txt /opt/requirements-annotation-cpu.txt
+RUN python -m pip install --no-cache-dir --no-deps --target /opt/annotation_cpu_vendor -r /opt/requirements-annotation-cpu.txt
+WORKDIR /app
+COPY main.py gpu_scheduler.py http_logging.py ./
+COPY pipeline_run.py annotation_batch_queue.py request_log.py job_log.py ./
+COPY annotation_job.py review_package_sync.py segment_job.py synthesis_job.py training_job.py class_schema.py deploy_job.py pnt_login.py ./
+COPY auto-labeling/sam3_with_dino ./auto-labeling/sam3_with_dino
+COPY auto-labeling/background ./auto-labeling/background
+COPY auto-segment/sam ./auto-segment/sam
+# The additional dependencies are activated only in CPU annotation subprocesses.
+RUN PYTHONPATH=/app/auto-labeling/sam3_with_dino:/opt/annotation_cpu_vendor CUDA_VISIBLE_DEVICES='' python -B -c "import mediapipe,cv2; from annotation_pipeline.gates import Gates; print('Annotation CPU imports OK')"
+LABEL pnt.annotation.release="auto-annotation-20261026.1" pnt.annotation.source_experiment="E027"
+EXPOSE 2140
+CMD ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "2140", "--no-access-log"]

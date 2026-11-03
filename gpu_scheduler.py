@@ -189,7 +189,7 @@ class NvmlGpuSlotPool:
 
     def _log(self, message: str, level: str = "INFO") -> None:
         if self._logger is not None:
-            self._logger(message, phase="annotation", level=level)
+            self._logger(message, phase="gpu", level=level)
 
     def _read_all(self) -> Tuple[List[GpuSnapshot], List[str]]:
         snapshots = []
@@ -328,7 +328,7 @@ def get_gpu_slot_pool(
     wait_timeout_sec: int,
     logger: Optional[LogWriter] = None,
 ) -> NvmlGpuSlotPool:
-    """Return one scheduler shared by every annotation request in this process."""
+    """Return one scheduler shared by annotation and segment jobs in this process."""
     global _pool, _pool_signature
     signature = (tuple(gpu_ids), wait_timeout_sec)
 

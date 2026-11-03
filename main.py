@@ -1135,7 +1135,7 @@ def _annotation_gpu_ids() -> List[int]:
 
 
 def _annotation_gpu_slot_wait_sec() -> int:
-    default_wait_sec = 14400
+    default_wait_sec = 43200
     raw = os.getenv("ANNOTATION_GPU_SLOT_WAIT_SEC", str(default_wait_sec))
     try:
         value = int(raw)

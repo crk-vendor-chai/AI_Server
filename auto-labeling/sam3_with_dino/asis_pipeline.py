@@ -78,6 +78,11 @@ def _parser() -> argparse.ArgumentParser:
     # Candidate-only controls. Defaults reproduce the selected ff:0.45 mode.
     parser.add_argument("--asis-engine-runner", type=Path)
     parser.add_argument(
+        "--asis-work-dir",
+        type=Path,
+        help="Isolate intermediate caches, logs and summary for parallel product jobs",
+    )
+    parser.add_argument(
         "--asis-fill-threshold",
         type=float,
         default=float(os.getenv("SAM3_DINO_ASIS_FILL_THRESHOLD", "0.45")),
@@ -130,6 +135,7 @@ def _strip_wrapper_options(argv: list[str]) -> list[str]:
         "--run-name",
         "--runs-root",
         "--asis-engine-runner",
+        "--asis-work-dir",
         "--asis-fill-threshold",
         "--asis-edge-area-ratio",
         "--asis-short-run",
@@ -387,7 +393,10 @@ def main(argv: list[str] | None = None) -> int:
     runs_root = _resolve_path(args.runs_root)
     runs_root.mkdir(parents=True, exist_ok=True)
     pass1_name = f"{args.run_name}__pass1"
-    cache_root = runs_root / "_asis_cache" / args.run_name
+    work_dir = _resolve_path(args.asis_work_dir) if args.asis_work_dir else None
+    cache_root = work_dir / "cache" if work_dir else runs_root / "_asis_cache" / args.run_name
+    pass1_log = work_dir / "pass1.log" if work_dir else runs_root / pass1_name / "asis_pipeline.log"
+    pass2_log = work_dir / "pass2.log" if work_dir else runs_root / args.run_name / "asis_pipeline.log"
     dino_cache_root = cache_root / "dino"
     fill_root = cache_root / "fill"
     product_cache_root = cache_root / "product"
@@ -422,7 +431,7 @@ def main(argv: list[str] | None = None) -> int:
         common_asis,
     )
     print(f"[asis] pass1 start run={pass1_name}", flush=True)
-    _run(pass1, runs_root / pass1_name / "asis_pipeline.log", env)
+    _run(pass1, pass1_log, env)
 
     fill_counts: dict[str, int] = {}
     for product_dir in products:
@@ -458,7 +467,7 @@ def main(argv: list[str] | None = None) -> int:
         ],
     )
     print(f"[asis] pass2 start run={args.run_name}", flush=True)
-    _run(pass2, runs_root / args.run_name / "asis_pipeline.log", env)
+    _run(pass2, pass2_log, env)
 
     postprocess: dict[str, dict[str, int]] = {}
     for product_dir in products:
@@ -503,7 +512,7 @@ def main(argv: list[str] | None = None) -> int:
         "fill_frames": fill_counts,
         "postprocess": postprocess,
     }
-    summary_path = runs_root / args.run_name / "asis_summary.json"
+    summary_path = work_dir / "asis_summary.json" if work_dir else runs_root / args.run_name / "asis_summary.json"
     summary_path.write_text(
         json.dumps(summary, ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",

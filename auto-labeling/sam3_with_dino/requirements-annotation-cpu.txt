@@ -1,0 +1,6 @@
+# Private CPU-worker import path only. Do not replace the API/GPU Python packages.
+mediapipe==0.10.32
+opencv-contrib-python==4.11.0.86
+absl-py==2.3.1
+flatbuffers==25.9.23
+sounddevice==0.5.3

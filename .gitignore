@@ -85,3 +85,17 @@ corrected-labeling/
 *.bak_*
 *.orig
 *~
+
+# Versioned annotation model bytes are deployed separately; keep public metadata.
+model_releases/auto_annotation/*/*
+!model_releases/auto_annotation/*/manifest.json
+!model_releases/auto_annotation/*/README.md
+
+ # 운영 백업
+/.backups/
+
+# 로컬 인증 파일
+.HF_TOKEN
+
+# 내보낸 모델
+*.onnx

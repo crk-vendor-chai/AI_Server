@@ -24,6 +24,7 @@ class AsisPipelineTests(unittest.TestCase):
             "--product", "45_PRODUCT",
             "--run-name=api-run",
             "--asis-fill-threshold", "0.5",
+            "--asis-work-dir=/tmp/isolated-annotation",
             "--skip-export",
             "--gpu", "1",
         ]

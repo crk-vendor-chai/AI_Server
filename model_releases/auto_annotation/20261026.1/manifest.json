@@ -1,0 +1,238 @@
+{
+  "release": "auto-annotation-20261026.1",
+  "assets": {
+    "pooled": {
+      "file": "pooled.pt",
+      "sha256": "a715bee48d65115f548fe624fbdecc790a0bf048b706ef9176c5edfbe2bd9cf4",
+      "bytes": 4105607,
+      "frozen_source": "versions/e005_v001/results/encoder_cpu.pt"
+    },
+    "dino_old": {
+      "file": "dino_old.pt",
+      "sha256": "3feb567a9d1afd63c959b718c4ad69541a17310a447a90f8fa331e20b03554b3",
+      "bytes": 8242,
+      "frozen_source": "versions/e005_v001/results/head_C_1p0.pt"
+    },
+    "dino_new": {
+      "file": "dino_new.pt",
+      "sha256": "f9be52ecba1b1de3976beecafdc56924d8cb24c71fc418b825db903e2d8f265d",
+      "bytes": 8230,
+      "frozen_source": "versions/e006_v001/results/head_C_1p0.pt"
+    },
+    "prototype": {
+      "file": "prototype.json",
+      "sha256": "c5f1ab196b6b37fd5abb6b145b95be8ac7e8e6170c7c8bd3e512a7103af8bf7a",
+      "bytes": 973,
+      "frozen_source": "versions/e006_v003/results/prototype_16_gamma_2.json"
+    },
+    "centers": {
+      "file": "centers.npy",
+      "sha256": "0d8d5b05736816edea5c33449828b48de5f4ff5e8d232e46bbbdcbf9087fb77e",
+      "bytes": 73856,
+      "frozen_source": "versions/e006_v003/results/centers_16.npy"
+    },
+    "spatial": {
+      "file": "spatial.pt",
+      "sha256": "44c7fae8f5c2b8a8530409208b18e3c454d218a8948da4fc2a2d2abbaf6be7e3",
+      "bytes": 4105129,
+      "frozen_source": "versions/e008_v002/results/encoder_cpu.pt"
+    },
+    "patch": {
+      "file": "patch.pt",
+      "sha256": "a0f318f4f1c5baf68b4255f019aa2480a27b72e70139c9ccc0bb0dc5c65c9432",
+      "bytes": 31843,
+      "frozen_source": "versions/e011_v001/results/head_00.pt"
+    },
+    "sticker": {
+      "file": "sticker.pt",
+      "sha256": "00d00e91707f63b97ca1f894c470e53c094fc4a2eed3798034d168ee40bfaf96",
+      "bytes": 38922,
+      "frozen_source": "versions/e012_v004/results/cnn_24.pt"
+    },
+    "bank": {
+      "file": "bank.npz",
+      "sha256": "a6900eca01270d703082afa1da53490d3c2738e4b0cfc3628a43157471609587",
+      "bytes": 18986,
+      "frozen_source": "versions/e014_v004/results/negative_bank.npz"
+    },
+    "product": {
+      "file": "product.pt",
+      "sha256": "b2c97ef23527b28e12147d0fa3c31bc68e0dc52ebd9a1a1b4c253ac4cf3d2359",
+      "bytes": 302641,
+      "frozen_source": "versions/e017_v001/results/head_10.pt"
+    },
+    "presence": {
+      "file": "presence.pt",
+      "sha256": "03189cbc47a38a96841a4a631f1e00137fd6ed2d58195d011974d0f25c1e6e78",
+      "bytes": 316535,
+      "frozen_source": "versions/e018_v001/results/head_60.pt"
+    },
+    "nonhand": {
+      "file": "nonhand.pt",
+      "sha256": "2586de3a0e1be5db2f2222f5be9d504556ad6a079cd7dd7508c658372357aea4",
+      "bytes": 155287,
+      "frozen_source": "versions/e023_v002/results/binary_10.pt"
+    },
+    "face": {
+      "file": "face.tflite",
+      "sha256": "b4578f35940bf5a1a655214a1cce5cab13eba73c1297cd78e1a04c2380b0152f",
+      "bytes": 229746,
+      "frozen_source": "cache/e005_v002/blaze_face_short_range.tflite"
+    },
+    "hand": {
+      "file": "hand.task",
+      "sha256": "fbc2a30080c3c557093b5ddfc334698132eb341044ccee322ccf8bcf3607cde1",
+      "bytes": 7819105,
+      "frozen_source": "cache/e005_v001/hand_landmarker.task"
+    },
+    "reference_cam_0": {
+      "file": "reference_cam_0.jpg",
+      "sha256": "4ad42f266519704f2a0329d0a9ac8e3d7641e6e00c22cc904e60074d0afc08ec",
+      "bytes": 45056,
+      "frozen_source": "data/e016_v001/TRAIN62_cam_0_reference.jpg"
+    },
+    "reference_cam_2": {
+      "file": "reference_cam_2.jpg",
+      "sha256": "d578f85499f63e64a191eaa683fb34e91338c628e99b84b6034724b60595786e",
+      "bytes": 40960,
+      "frozen_source": "data/e016_v001/TRAIN62_cam_2_reference.jpg"
+    }
+  },
+  "settings": {
+    "local_threshold": 0.027695657014846803,
+    "face_threshold": 0.5,
+    "dino_new": {
+      "C": 1.0,
+      "head": "head_C_1p0.pt",
+      "threshold": 0.014609392285346984,
+      "min_calibration_protected": 0.034609392285346985,
+      "protected_count": 40,
+      "remaining_calibration_FP": 175,
+      "incremental_calibration_FP_candidates": 3
+    },
+    "prototype": {
+      "name": "prototype_16_gamma_2",
+      "model": "prototype_16_gamma_2.json",
+      "centers": "centers_16.npy",
+      "count": 16,
+      "gamma": 2,
+      "threshold": 0.0440038042005369,
+      "min_protected": 0.0640038042005369,
+      "numeric_bytes": 73992,
+      "calibration_candidate_count": 71,
+      "incremental_calibration_FP_after_hand_guard": 70
+    },
+    "patch": {
+      "whole_threshold": 0.10194377928972244,
+      "minimum_whole_fraction": 0.75,
+      "strong_patch_threshold": 0.95,
+      "epoch": 0
+    },
+    "native": {
+      "enabled": true,
+      "margin": 0.05,
+      "minimum_similarity": 0.8,
+      "CAL_FP_removed": 1,
+      "protected_lost": 0,
+      "minimum_original_short_side": 32,
+      "minimum_original_area": 1024
+    },
+    "sticker": {
+      "enabled": true,
+      "current_min": 0.85,
+      "reference_min": 0.95,
+      "NCC_min": 0.98,
+      "protected_lost": 0,
+      "CAL_unmatched_removed": 28
+    },
+    "restore": {
+      "enabled": true,
+      "epoch": 60,
+      "presence_min": 0.999,
+      "quality_min": 0.5,
+      "neighbours_min": 2,
+      "CAL_IoU50_gain": 21,
+      "CAL_good5_gain": 2,
+      "CAL_new_empty_FP": 0,
+      "CAL_new_wrong_location": 0
+    },
+    "temporal": {
+      "enabled": true,
+      "motion_weight": 0.1,
+      "presence_min": 0.999,
+      "quality_min": 0.7,
+      "path_agreement": 0.75,
+      "candidate_agreement": 0.75,
+      "CAL_TP50_gain": 3,
+      "CAL_good5_gain": 1,
+      "CAL_empty_added": 0,
+      "CAL_wrong_added": 0
+    },
+    "nonhand": {
+      "head": "versions/e023_v002/results/binary_10.pt",
+      "thresholds": {
+        "1": 0.9568833575973511
+      },
+      "minimum_native_side": 32,
+      "CAL_empty_removed": 1,
+      "weights_changed": false,
+      "typed_head_better_than_binary": false
+    },
+    "local_product": {
+      "enabled": true,
+      "agreement": 0.9,
+      "probability": 0.95,
+      "dino_min": 0.25,
+      "CAL_new5": 1,
+      "CAL_lost5": 0,
+      "CAL_TP50_delta": 1,
+      "CAL_new_wrong": 0
+    },
+    "product_route_probability": 0.01,
+    "product_routes_per_camera": 20,
+    "references": {
+      "cam_0": {
+        "asset": "reference_cam_0",
+        "foreground": [
+          [
+            102.0,
+            40.99992,
+            217.00032,
+            115.00008
+          ]
+        ]
+      },
+      "cam_2": {
+        "asset": "reference_cam_2",
+        "foreground": [
+          [
+            346.0,
+            331.99992,
+            478.00000000000006,
+            392.99976000000004
+          ]
+        ]
+      }
+    }
+  },
+  "max_hands": 1,
+  "image_size": [
+    640,
+    480
+  ],
+  "GT_used_at_inference": false,
+  "network_model_downloads": false,
+  "excluded": [
+    "E017 automatic product deletion",
+    "E025",
+    "E026",
+    "E028 oracle",
+    "E030 product guard",
+    "E032",
+    "E033",
+    "E034"
+  ],
+  "source_experiment": "E027",
+  "source_release": "E027-d003-v001",
+  "naming_change_only": true
+}

@@ -2,8 +2,8 @@ services:
   pnt-api:
     build:
       context: .
-      dockerfile: Dockerfile
-    image: crk-0-pnt-api:latest
+      dockerfile: Dockerfile.annotation
+    image: crk-0-pnt-api:annotation-20261026.1
     container_name: crk-0-pnt-api
     env_file:
       - .env
@@ -23,11 +23,11 @@ services:
       ANNOTATION_GPU_MAX_UTILIZATION: "${ANNOTATION_GPU_MAX_UTILIZATION:-80}"
       ANNOTATION_GPU_POLL_INTERVAL_SEC: "${ANNOTATION_GPU_POLL_INTERVAL_SEC:-5}"
       ANNOTATION_GPU_STATUS_LOG_INTERVAL_SEC: "${ANNOTATION_GPU_STATUS_LOG_INTERVAL_SEC:-60}"
-      ANNOTATION_GPU_SLOT_WAIT_SEC: "${ANNOTATION_GPU_SLOT_WAIT_SEC:-14400}"
+      ANNOTATION_GPU_SLOT_WAIT_SEC: "${ANNOTATION_GPU_SLOT_WAIT_SEC:-43200}"
       ANNOTATION_BASE_DIR: /app/img_download
       ANNOTATION_MINIO_UPLOAD_WORKERS: "${ANNOTATION_MINIO_UPLOAD_WORKERS:-4}"
       SEGMENT_BASE_DIR: /app/segment_work
-      SAM3_DINO_RUNNER: /app/auto-labeling/sam3_with_dino/asis_pipeline.py
+      SAM3_DINO_RUNNER: /app/auto-labeling/sam3_with_dino/annotation_pipeline.py
       SAM3_DINO_RUNS_DIR: /app/runs/sam3_with_dino
       SAM3_DINO_ASIS_FILL_THRESHOLD: "${SAM3_DINO_ASIS_FILL_THRESHOLD:-0.45}"
       SAM3_DINO_ASIS_EDGE_AREA_RATIO: "${SAM3_DINO_ASIS_EDGE_AREA_RATIO:-0.30}"
@@ -104,6 +104,7 @@ services:
       - ./segment_work:/app/segment_work
       - ./auto-segment/sam/sam_vit_h_4b8939.pth:/app/auto-segment/sam/sam_vit_h_4b8939.pth:ro
       - model-cache:/cache
+      - ./model_releases/auto_annotation/20261026.1:/app/model_releases/auto_annotation/20261026.1:ro
     shm_size: "16gb"
     gpus: all
     init: true
