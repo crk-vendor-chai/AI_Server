@@ -19,13 +19,14 @@ class Features:
 
 
 class Gates:
-    def __init__(self,bundle):
+    def __init__(self,bundle,use_reference_background=True):
         if os.environ.get('CUDA_VISIBLE_DEVICES')!='':raise RuntimeError('ANNOTATION gate worker must be CPU-only')
         from .fallback import FallbackVerifier
         local_cpu.configure(4);self.bundle=bundle;self.dino=FallbackVerifier(bundle)
         self.encoder=bundle.load('spatial');self.patch=bundle.load('patch');self.cnn=bundle.load('sticker')
         self.bank=np.load(bundle.path('bank'));self.references={};self.foreground={}
-        for cam,cfg in bundle.settings['references'].items():
+        self.use_reference_background=use_reference_background
+        for cam,cfg in (bundle.settings['references'].items() if use_reference_background else []):
             with Image.open(bundle.path(cfg['asset'])) as im:self.references[cam]=im.convert('RGB')
             self.foreground[cam]=cfg['foreground']
     def patch_keep(self,im,box):
@@ -46,6 +47,8 @@ class Gates:
     def sticker_score(self,im,box):
         with torch.inference_mode():return torch.sigmoid(self.cnn(sticker.tensor(im,box).unsqueeze(0))).item()
     def sticker_check(self,im,box,cam):
+        if not self.use_reference_background:
+            return {'reject':False,'current_score':None,'guard':None,'reason':'top_view_without_calibrated_reference'}
         cfg=self.bundle.settings['sticker'];current=self.sticker_score(im,box);e=None
         if cfg['enabled'] and current>=cfg['current_min']:
             b=spatial.clip(box)
@@ -60,7 +63,7 @@ class Gates:
         reject=bool(cfg['enabled'] and current>=cfg['current_min'] and e is not None and e['supported'] and e['reference_score']>=cfg['reference_min'] and e['correlation']>=cfg['NCC_min'])
         return {'reject':reject,'current_score':current,'guard':e}
     def run(self,im,source,hand,product,cam):
-        if im.size!=(640,480) or cam not in self.references:raise ValueError('Unsupported ANNOTATION image size or camera')
+        if im.size!=(640,480) or (self.use_reference_background and cam not in self.references):raise ValueError('Unsupported ANNOTATION image size or camera')
         if len(hand)>1 or len(product)>1:raise ValueError('ANNOTATION outputs at most one hand/product')
         result={'hand':hand,'product':product,'decisions':{}}
         if hand:

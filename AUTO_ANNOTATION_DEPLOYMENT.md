@@ -4,6 +4,8 @@
 
 현재 릴리스는 `auto-annotation-20261026.1`, 원 실험은 E027이다. 이번 릴리스는 이름·경로 정리이며 모델 바이트, 학습, 판정 임계값은 변경하지 않았다. 손은 최대 하나이며 기존 640×480 cam_0/cam_2 환경을 대상으로 한다.
 
+냉동 상품의 상단 `cam_0/cam_1`처럼 `cam_1`이 포함되면 AS-IS 2-pass 뒤에 상단 프로필 후처리를 적용한다. 기존 손 후보 검증·복원·시간축 일관성·비손 제거 및 상품 국소 재검출은 재사용하고, 특정 매장의 참조 배경에 의존하는 스티커 제거만 생략한다. 원래 카메라 이름으로 COCO를 생성하며 `prepared.json`과 완료 표식에 `camera_profile: top`, `reference_background_filter: false`를 기록한다. `cam_0/cam_2` 상품은 참조 배경을 포함한 기존 후처리를 사용한다.
+
 ## 소스와 모델 준비
 
 Git에 올릴 소스/설정 파일은 `Dockerfile.annotation`, `docker-compose.yml`, `gpu_scheduler.py`, `.gitignore`, 이 문서, `auto-labeling/sam3_with_dino/annotation_pipeline.py`, `asis_pipeline.py`, `requirements-annotation-cpu.txt`, `annotation_pipeline/*.py`, `model_releases/auto_annotation/20261026.1/manifest.json` 및 `README.md`다.

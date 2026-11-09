@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Production-compatible ANNOTATION orchestrator. Old AS-IS remains an unchanged rollback entry."""
+"""ANNOTATION orchestrator with top-view postprocessing for uncalibrated cameras."""
 from __future__ import annotations
-import argparse,hashlib,json,os,subprocess,sys,tempfile,time
+import argparse,hashlib,json,os,re,subprocess,sys,tempfile,time
 from datetime import datetime, timezone
 from pathlib import Path
 from annotation_pipeline.bundle import Bundle
@@ -33,8 +33,11 @@ def main(argv=None):
     p.add_argument('--dino-model',default='IDEA-Research/grounding-dino-base');p.add_argument('--skip-export',action='store_true')
     args,unknown=p.parse_known_args(argv)
     if args.backend!='video':raise ValueError('ANNOTATION release requires video AS-IS')
-    if any(cam not in {'cam_0','cam_2'} for cam in args.cams):raise ValueError('ANNOTATION release has references for cam_0/cam_2 only')
-    bundle=Bundle();runs=Path(args.runs_root).resolve();images=Path(args.img_root).resolve()
+    if any(re.fullmatch(r'cam_\d+',cam) is None for cam in args.cams):raise ValueError('Invalid camera name')
+    if any(cam not in {'cam_0','cam_1','cam_2'} for cam in args.cams):raise ValueError('Unsupported camera')
+    top_view='cam_1' in args.cams
+    bundle=Bundle()
+    runs=Path(args.runs_root).resolve();images=Path(args.img_root).resolve()
     products=[Path(v) if Path(v).is_absolute() else images/v for v in args.product] if args.product else sorted(v for v in images.iterdir() if v.is_dir() and not v.name.startswith('_'))
     if not products:raise ValueError('No product images')
     for product in products:
@@ -43,6 +46,9 @@ def main(argv=None):
     env=os.environ.copy();env['PYTHONDONTWRITEBYTECODE']='1';env['PYTHONUNBUFFERED']='1'
     if args.gpu:env['CUDA_VISIBLE_DEVICES']=args.gpu
     env.setdefault('TORCH_COMPILE_DISABLE','1')
+    if top_view:
+        print(json.dumps({'phase':'ANNOTATION_ROUTE','pipeline':'asis_two_pass+top_postprocess',
+                          'camera_profile':'top','reference_background_filter':False,'cams':args.cams}),flush=True)
     # Preserve the original full CLI; suppress only intermediate web export.
     base_command=[args.python_bin,str(SCRIPT_DIR/'asis_pipeline.py'),*argv,'--asis-work-dir',str(outer/'asis')]
     if '--skip-export' not in argv:base_command.append('--skip-export')
@@ -58,8 +64,9 @@ def main(argv=None):
         class_id=args.product_class_id or int(product.name.split('_',1)[0])
         if class_id<=0:raise ValueError('Product class must not collide with hand class 0')
         common=['--product-root',str(product_root)]
+        profile_args=['--camera-profile','top'] if top_view else []
         run([args.python_bin,'-B','-m','annotation_pipeline.postprocess',*common,'--pass1-root',str(first),
-             '--product-images',str(product),'--product-class-id',str(class_id),'--key-prefix',product.name.split('_',1)[0],'--cams',*cams],outer/(product.name+'_cpu.log'),cpu_env)
+             '--product-images',str(product),'--product-class-id',str(class_id),'--key-prefix',product.name.split('_',1)[0],'--cams',*cams,*profile_args],outer/(product.name+'_cpu.log'),cpu_env)
         run([args.python_bin,'-B','-m','annotation_pipeline.local_product',*common,'--product-name',product.name,
              '--dino-model',args.dino_model],outer/(product.name+'_local_dino.log'),gpu_env)
         run([args.python_bin,'-B','-m','annotation_pipeline.finalize',*common,'--product-class-id',str(class_id),'--cams',*cams],outer/(product.name+'_finalize.log'),cpu_env)
@@ -76,6 +83,8 @@ def main(argv=None):
         result={'release':bundle.manifest['release'],'runner_sha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
             'model_manifest_sha256':hashlib.sha256((bundle.folder/'manifest.json').read_bytes()).hexdigest(),
             'GPU':args.gpu,'GT_used':False,'MinIO_write_by_runner':False,'web_export':not args.skip_export}
+        if top_view:
+            result.update({'camera_profile':'top','reference_background_filter':False,'cams':cams})
         with (product_root/'ANNOTATION_COMPLETE.json').open('x') as f:json.dump(result,f,indent=2)
     print(json.dumps({'phase':'ANNOTATION_COMPLETE','release':bundle.manifest['release'],'products':len(products)}),flush=True)
     return 0

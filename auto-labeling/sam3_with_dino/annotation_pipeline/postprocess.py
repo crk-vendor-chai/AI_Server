@@ -36,7 +36,8 @@ def source_image(folder,stem):
 
 def prepare(args):
     assert os.environ.get('CUDA_VISIBLE_DEVICES')==''
-    bundle=Bundle();cfg=bundle.settings;rt=Features(bundle);gates=Gates(bundle)
+    profile=getattr(args,'camera_profile','reference')
+    bundle=Bundle();cfg=bundle.settings;rt=Features(bundle);gates=Gates(bundle,use_reference_background=profile=='reference')
     head=bundle.load('presence');binary=bundle.load('nonhand');product_head=bundle.load('product')
     root=Path(args.product_root);images=Path(args.product_images);work=root/'annotation';work.mkdir(exist_ok=False)
     originals={};before={};raw={};frames={};lookup={};features=[];routes=[];decisions=[];started=time.perf_counter()
@@ -116,6 +117,7 @@ def prepare(args):
         write_lines(work/'raw_predictions.jsonl',originals.values());write_lines(work/'prepared_predictions.jsonl',chosen.values())
         write_lines(work/'gate_decisions.jsonl',decisions);write_lines(work/'actions.jsonl',actions)
         (work/'local_product_routes.json').write_text(json.dumps(selected));(work/'prepared.json').write_text(json.dumps({'release':bundle.manifest['release'],
+            'camera_profile':profile,'reference_background_filter':profile=='reference',
             'frames':len(chosen),'feature_ROIs':len(features),'local_product_routes':len(selected),'seconds':time.perf_counter()-started,'GT_read':False}))
         print(json.dumps({'phase':'ANNOTATION_PREPARED','frames':len(chosen),'local_product_routes':len(selected)}),flush=True)
     finally:gates.close()
@@ -124,4 +126,5 @@ def prepare(args):
 if __name__=='__main__':
     p=argparse.ArgumentParser();p.add_argument('--product-root',required=True);p.add_argument('--pass1-root',required=True)
     p.add_argument('--product-images',required=True);p.add_argument('--product-class-id',required=True,type=int)
-    p.add_argument('--key-prefix',required=True);p.add_argument('--cams',nargs='+',required=True);prepare(p.parse_args())
+    p.add_argument('--key-prefix',required=True);p.add_argument('--cams',nargs='+',required=True)
+    p.add_argument('--camera-profile',choices=['reference','top'],default='reference');prepare(p.parse_args())
